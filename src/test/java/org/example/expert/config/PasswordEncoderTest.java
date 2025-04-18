@@ -5,19 +5,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(MockitoExtension.class)
+
 class PasswordEncoderTest {
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+
+    private final PasswordEncoder passwordEncoder = new PasswordEncoder();
 
     @Test
     void matches_메서드가_정상적으로_동작한다() {
-        System.out.println("Test is running...");
         // given
         String rawPassword = "testPassword";
         String encodedPassword = passwordEncoder.encode(rawPassword);
