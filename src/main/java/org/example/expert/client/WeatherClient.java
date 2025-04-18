@@ -1,5 +1,7 @@
 package org.example.expert.client;
 
+import java.util.Arrays;
+import java.util.Optional;
 import org.example.expert.client.dto.WeatherDto;
 import org.example.expert.domain.common.exception.ServerException;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -22,17 +24,24 @@ public class WeatherClient {
         this.restTemplate = builder.build();
     }
 
+    public static void main(String[] args){
+        WeatherClient weatherClient = new WeatherClient(new RestTemplateBuilder());
+        weatherClient.getTodayWeather();
+    }
+
+
     public String getTodayWeather() {
         ResponseEntity<WeatherDto[]> responseEntity =
                 restTemplate.getForEntity(buildWeatherApiUri(), WeatherDto[].class);
 
         WeatherDto[] weatherArray = responseEntity.getBody();
+
+        // 200ok 이면 성공적으로 가져옴 단 getBody 했을 떄 데이터가 없을 수 있으니 체크필요
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             throw new ServerException("날씨 데이터를 가져오는데 실패했습니다. 상태 코드: " + responseEntity.getStatusCode());
-        } else {
-            if (weatherArray == null || weatherArray.length == 0) {
-                throw new ServerException("날씨 데이터가 없습니다.");
-            }
+        }
+        if (weatherArray == null || weatherArray.length == 0) {
+            throw new ServerException("날씨 데이터가 없습니다.");
         }
 
         String today = getCurrentDate();
