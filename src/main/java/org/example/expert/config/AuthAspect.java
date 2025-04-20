@@ -52,6 +52,8 @@ public class AuthAspect {
         log.info("요청 본문 -> {}", arg);
         Object responseObj = point.proceed(); // 대상 메소드 실행
         log.info("응답 본문 -> {}", responseObj); // 타겟 메소드 실행 후
+
         return responseObj;
+
     }
 }
