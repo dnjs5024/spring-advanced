@@ -1,7 +1,10 @@
 package org.example.expert.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -24,13 +27,17 @@ public class AuthAspect {
      * @param point 대상 메서드 실행을 제어할 때 사용
      * @return 응답 본문
      */
-    @Around("execution(* org.example.expert.domain.comment.controller.CommentAdminController.deleteComment(..))")
-    public Object deleteCommentAuthCheck(ProceedingJoinPoint point) throws Throwable {
-        return setLog(point);
-    }
-    @Around("execution(* org.example.expert.domain.user.controller.UserAdminController.changeUserRole(..))")
-    public Object changeUserAuthCheck(ProceedingJoinPoint point) throws Throwable {
-        return setLog(point);
+    @Around(
+        "execution(* org.example.expert.domain.comment.controller.CommentAdminController.deleteComment(..))"+
+        "execution(* org.example.expert.domain.user.controller.UserAdminController.changeUserRole(..))"
+    )
+    public Object authCheckUserLog(ProceedingJoinPoint point) throws Throwable {
+        Map<String,Object> map = new HashMap<>();
+        map.put("id",point.getArgs());
+        if("changeUserRole".equals(point.getSignature().getName())){
+            map.put("data",point.getArgs()[1]);
+        }
+        return setLog(point, map);
     }
 
     /**
@@ -39,19 +46,25 @@ public class AuthAspect {
      * @return 응답 본문
      * @throws Throwable 뭘까
      */
-    public Object setLog(ProceedingJoinPoint point) throws Throwable {
+    public Object setLog(ProceedingJoinPoint point,Map<String,Object> map) throws Throwable {
         // 타겟 메소드 실행전
         HttpServletRequest request = // 스프링이 현재 요청 컨텍스트에서 자동으로 꺼내줌
             ((ServletRequestAttributes) Objects.requireNonNull(
                 RequestContextHolder.getRequestAttributes())).getRequest();
 
+        ObjectMapper objectMapper = new ObjectMapper();//json변환
         Object[] arg = point.getArgs();
+
         log.info("요청한 사용자의 ID -> {}", arg[0]); // 대상 메소드의 매개변수에 들어온 값 가져옴 배열형태
         log.info("API 요청 시각 -> {}", LocalDateTime.now());
         log.info("API 요청 URL -> {}", request.getRequestURI());
-        log.info("요청 본문 -> {}", arg);
+        log.info("요청 본문 -> {}", objectMapper.writeValueAsString(map));
+
+        map.clear();// 맵 초기화
+
         Object responseObj = point.proceed(); // 대상 메소드 실행
-        log.info("응답 본문 -> {}", responseObj); // 타겟 메소드 실행 후
+
+        log.info("응답 본문 -> {}", objectMapper.writeValueAsString(map.put("data",responseObj))); // 타겟 메소드 실행 후
 
         return responseObj;
 
