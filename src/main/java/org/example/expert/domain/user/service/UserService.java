@@ -24,15 +24,6 @@ public class UserService {
         return new UserResponse(user.getId(), user.getEmail());
     }
 
-    public static void main(String[] args){
-        String test = "A1aasdasdasdasd";
-        if (test.length() < 8 ||
-            !test.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$")
-        ) {
-            throw new InvalidRequestException("새 비밀번호는 8자 이상이어야 하고, 숫자와 대문자를 포함해야 합니다.");
-        }
-    }
-
     @Transactional
     public void changePassword(long userId, UserChangePasswordRequest userChangePasswordRequest) {
 
